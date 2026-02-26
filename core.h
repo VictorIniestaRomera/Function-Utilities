@@ -6,21 +6,21 @@ namespace util {
 	template<class T>
 	class Core {
 		T* arr;
-		int size;
+		int length;
 
 		typedef T* iterator;
 
 	public:
 		//Constructors
-		Core() : arr(new T[0]), size(0) {}
+		Core() : arr(new T[0]), length(0) {}
 
 		~Core() {
 			delete arr;
 		}
 
 		//Data
-		inline int length() const {
-			return size;
+		inline int size() const {
+			return length;
 		}
 
 		inline T front() const noexcept {
@@ -28,7 +28,7 @@ namespace util {
 		}
 
 		inline T back() const noexcept {
-			return arr[length()];
+			return arr[size()];
 		}
 
 		inline T* begin() const noexcept {
@@ -36,12 +36,12 @@ namespace util {
 		}
 
 		inline T* end() const noexcept {
-			return &arr[length()];
+			return &arr[size()];
 		}
 
 		inline T at(int index) const {
 			try {
-				if (index < 0 || index >= size) throw(new CoreException(1));
+				if (index < 0 || index >= length) throw(new CoreException(1));
 				
 				return arr[index];
 			}
@@ -66,8 +66,8 @@ namespace util {
 		}
 
 		//Modify
-		inline void push_back(T item) noexcept {
-			const int len = length();
+		inline void push_back(const T item) noexcept {
+			const int len = size();
 			T* save = new T[len];
 
 			for (int i = 0; i < len; i++) {
@@ -83,15 +83,93 @@ namespace util {
 			}
 
 			arr[len] = item;
-			size++;
+			length++;
 
 			delete save;
+		}
+
+		inline void push_front(const T item) noexcept {
+			const int len = size();
+			T* save = new T[len + 1];
+
+			for (int i = 0; i < len; i++) {
+				save[i] = arr[i];
+			}
+
+			delete arr;
+
+			arr = new T[len + 1];
+
+			for (int i = 1; i < len + 1; i++) {
+				arr[i] = save[i - 1];
+			}
+
+			arr[0] = item;
+			length++;
+
+			delete save;
+		}
+
+		inline void pop_back() {
+			try {
+				if (size() == 0) throw(new CoreException(1));
+
+				const int len = size();
+				T* save = new T[len];
+
+				for (int i = 0; i < len; i++) {
+					save[i] = arr[i];
+				}
+
+				delete arr;
+
+				arr = new T[len - 1];
+
+				for (int i = 0; i < len - 1; i++) {
+					arr[i] = save[i];
+				}
+
+				length--;
+
+				delete save;
+			}
+			catch (const CoreException* e) {
+				std::cerr << e->what() << std::endl;
+			}
+		}
+
+		inline void pop_front() {
+			try {
+				if (size() == 0) throw(new CoreException(1));
+
+				const int len = size();
+				T* save = new T[len];
+
+				for (int i = 0; i < len; i++) {
+					save[i] = arr[i];
+				}
+
+				delete arr;
+
+				arr = new T[len - 1];
+
+				for (int i = 1; i < len; i++) {
+					arr[i - 1] = save[i];
+				}
+
+				length--;
+
+				delete save;
+			}
+			catch (const CoreException* e) {
+				std::cerr << e->what() << std::endl;
+			}
 		}
 
 		inline void remove(iterator pos) {
 			if (pos > end()) return;
 
-			const int len = length();
+			const int len = size();
 			T* save = new T[len - 1];
 			int count = 0;
 			int i = 0;
@@ -114,37 +192,42 @@ namespace util {
 				arr[i] = save[i];
 			}
 
-			size--;
+			length--;
 
 			delete save;
 		}
 
 		inline void remove(int pos) {
-			if (pos > length() - 1) return;
+			try {
+				if (pos < 0 || pos >= length) throw(new CoreException(1));
 
-			const int len = length();
-			T* save = new T[len];
+				const int len = size();
+				T* save = new T[len];
 
-			for (int i = 0; i < len; i++) {
-				save[i] = arr[i];
-			}
-
-			delete arr;
-
-			arr = new T[len - 1];
-			int count = 0;
-
-			for (int i = 0; i < len; i++) {
-				if (i != pos) {
-					arr[count] = save[i];
-
-					count++;
+				for (int i = 0; i < len; i++) {
+					save[i] = arr[i];
 				}
+
+				delete arr;
+
+				arr = new T[len - 1];
+				int count = 0;
+
+				for (int i = 0; i < len; i++) {
+					if (i != pos) {
+						arr[count] = save[i];
+
+						count++;
+					}
+				}
+
+				length--;
+
+				delete save;
 			}
-
-			size--;
-
-			delete save;
+			catch (const CoreException* e) {
+				std::cerr << e->what() << std::endl;
+			}
 		}
 
 		inline void clear() noexcept {
@@ -152,7 +235,29 @@ namespace util {
 
 			arr = new T[0];
 
-			size = 0;
+			length = 0;
+		}
+
+		inline void copy(Core<T> cor) noexcept {
+			delete arr;
+
+			length = cor.size();
+			arr = new T[length];
+
+			for (int i = 0; i < length; i++) {
+				arr[i] = cor.at(i);
+			}
+		}
+
+		inline void copy(Core<T>* cor) noexcept {
+			delete arr;
+
+			length = cor->size();
+			arr = new T[length];
+
+			for (int i = 0; i < length; i++) {
+				arr[i] = cor->at(i);
+			}
 		}
 
 		//Operators
@@ -163,19 +268,35 @@ namespace util {
 		inline T operator[](iterator index) {
 			return at(index);
 		}
+
+		inline void operator=(Core<T>& cor) {
+			copy(cor);
+		}
+
+		inline void operator=(Core<T>* cor) {
+			copy(cor);
+		}
+
+		inline void operator+=(T item) {
+			push_back(item);
+		}
+
+		inline void operator--() {
+			pop_back();
+		}
 	};
 }
 
 template<typename T>
 inline void operator<<(std::ostream& out, const util::Core<T>& cor) {
-	for (int i = 0; i < cor.length(); i++) {
+	for (int i = 0; i < cor.size(); i++) {
 		out << cor.at(i) << " ";
 	}
 }
 
 template<typename T>
 inline void operator<<(std::ostream& out, const util::Core<T>* cor) {
-	for (int i = 0; i < cor->length(); i++) {
+	for (int i = 0; i < cor->size(); i++) {
 		out << cor->at(i) << " ";
 	}
 }
