@@ -39,7 +39,7 @@ namespace util {
 			return &arr[size()];
 		}
 
-		inline T at(int index) const {
+		inline T at(const int index) const {
 			try {
 				if (index < 0 || index >= length) throw(new CoreException(1));
 				
@@ -52,7 +52,7 @@ namespace util {
 			}
 		}
 
-		inline T at(iterator index) const {
+		inline T at(const iterator index) const {
 			try {
 				if (index < begin() || index >= end()) throw(new CoreException(1));
 
@@ -166,7 +166,7 @@ namespace util {
 			}
 		}
 
-		inline void remove(iterator pos) {
+		inline void remove(const iterator pos) {
 			if (pos > end()) return;
 
 			const int len = size();
@@ -197,7 +197,7 @@ namespace util {
 			delete save;
 		}
 
-		inline void remove(int pos) {
+		inline void remove(const int pos) {
 			try {
 				if (pos < 0 || pos >= length) throw(new CoreException(1));
 
@@ -238,7 +238,7 @@ namespace util {
 			length = 0;
 		}
 
-		inline void copy(Core<T> cor) noexcept {
+		inline void copy(const Core<T> cor) noexcept {
 			delete arr;
 
 			length = cor.size();
@@ -249,7 +249,7 @@ namespace util {
 			}
 		}
 
-		inline void copy(Core<T>* cor) noexcept {
+		inline void copy(const Core<T>* cor) noexcept {
 			delete arr;
 
 			length = cor->size();
@@ -261,11 +261,11 @@ namespace util {
 		}
 
 		//Operators
-		inline T operator[](int index) {
+		inline T operator[](int index) const {
 			return at(index);
 		}
 
-		inline T operator[](iterator index) {
+		inline T operator[](iterator index) const {
 			return at(index);
 		}
 
